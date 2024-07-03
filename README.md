@@ -12,6 +12,6 @@ To achieve this, I implemented the following steps:
 - Connect to AWS Cognito to access a specific user pool and retrieve their banking IDs for Salt Edge.
 - Connect to Salt Edge, provide the retrieved banking IDs, and obtain the corresponding transactions.
 - Transform these transactions into a pandas DataFrame, with categories as the series, user IDs as the index, and the proportion of each category in each element for that record.
-- Use the DataFrame to create a chart with Seaborn to visualize the data.
+- Use the DataFrame to create a chart with Seaborn and Matplotlib to visualize the data.
 
 The code to solve this project can be found [HERE]()
