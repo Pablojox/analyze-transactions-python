@@ -1,10 +1,11 @@
 import os
-from pathlib import Path
 from typing import Optional
 
 import boto3
 import pandas as pd
 import requests
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 def get_environment_variable(name: str) -> str:
@@ -171,7 +172,8 @@ def get_transactions_main() -> None:
         all_transactions, customer_ids_df
     )
 
-    export_csv(user_transactions_percentages.drop("customer_id", axis=1))
+    # Call the function to plot the heatmap with the calculated percentages
+    plot_transactions_heatmap(user_transactions_percentages)
 
 
 def calculate_transaction_percentages(
@@ -214,15 +216,35 @@ def calculate_transaction_percentages(
     return percentages_df
 
 
-def export_csv(data: pd.DataFrame) -> None:
-    """Saves the provided data to a CSV file."""
-    default_path = Path(".")
-    f_name = "transactions.csv"  # Define the filename
-    transactions_path = default_path / "out" / f_name  # Combine path elements
+def plot_transactions_heatmap(df: pd.DataFrame) -> None:
+    """Plot a heatmap of transaction percentages per category for each customer."""
+    # Calculate the number of customers and categories
+    num_customers, num_categories = df.shape
 
-    data.to_csv(transactions_path, index=False)
-    print(f"Transaction percentages saved to: {transactions_path}")
+    # Set the figure size according to the dataframe size
+    plt.figure(figsize=(num_categories * 1.5, num_customers * 0.5))
+
+    # Creating the heatmap
+    sns.heatmap(
+        df.set_index("customer_id"),
+        annot=True,
+        cmap="YlGnBu",
+        cbar_kws={"label": "Percentage"},
+    )
+
+    # Adding title to the heatmap
+    plt.title("Percentage of Transactions per Category and Customer")
+
+    # Adding label to the x-axis
+    plt.xlabel("Transaction Category")
+
+    # Adding label to the y-axis
+    plt.ylabel("Customer ID")
+
+    # Displaying the plot
+    plt.show()
 
 
 if __name__ == "__main__":
     get_transactions_main()
+
