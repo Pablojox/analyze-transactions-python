@@ -225,7 +225,7 @@ def calculate_transaction_percentages(
     return percentages_df
 
 
-def plot_transactions_heatmap(df: pd.DataFrame) -> None:
+def plot_transactions(df: pd.DataFrame) -> None:
     """Plot a bar plot of transaction percentages per category"""
     # Prepare the dataframe
     melted_df = pd.melt(
