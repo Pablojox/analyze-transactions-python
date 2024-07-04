@@ -1,11 +1,10 @@
 import os
-from typing import Optional
-
-import boto3
 import pandas as pd
 import requests
 import seaborn as sns
 import matplotlib.pyplot as plt
+import boto3
+from config import LOCAL
 
 
 def get_environment_variable(name: str) -> str:
@@ -32,33 +31,38 @@ def get_cognito_client(region: Optional[str] = None) -> boto3.client:
 
 def list_customer_ids() -> list:
     """Lists all custom:banking_customer_id values, handles pagination efficiently."""
-    client = get_cognito_client()
-    all_customer_ids = []
-    pagination_token = None
-    while True:
-        kwargs = {"UserPoolId": get_environment_variable("USER_POOL_ID")}
-        if pagination_token:
-            kwargs["PaginationToken"] = pagination_token
-        response = client.list_users(**kwargs)
-        users = response.get("Users", [])
-        for user in users:
-            if not isinstance(user, dict):
-                continue
-            attributes = user.get("Attributes", [])
-            customer_id = next(
-                (
-                    attr.get("Value")
-                    for attr in attributes
-                    if attr.get("Name") == "custom:banking_customer_id"
-                ),
-                None,
-            )
-            if customer_id:
-                all_customer_ids.append(customer_id)
-        pagination_token = response.get("PaginationToken")
-        if not pagination_token:
-            break
-    return all_customer_ids
+    if LOCAL:
+        # If local, return customer IDs from the local CSV
+        transactions = pd.read_csv('./data/transactions.csv')
+        return transactions['customer_id'].unique().tolist()
+    else:
+        client = get_cognito_client()
+        all_customer_ids = []
+        pagination_token = None
+        while True:
+            kwargs = {"UserPoolId": get_environment_variable("USER_POOL_ID")}
+            if pagination_token:
+                kwargs["PaginationToken"] = pagination_token
+            response = client.list_users(**kwargs)
+            users = response.get("Users", [])
+            for user in users:
+                if not isinstance(user, dict):
+                    continue
+                attributes = user.get("Attributes", [])
+                customer_id = next(
+                    (
+                        attr.get("Value")
+                        for attr in attributes
+                        if attr.get("Name") == "custom:banking_customer_id"
+                    ),
+                    None,
+                )
+                if customer_id:
+                    all_customer_ids.append(customer_id)
+            pagination_token = response.get("PaginationToken")
+            if not pagination_token:
+                break
+        return all_customer_ids
 
 
 def get_salt_edge_headers() -> dict:
@@ -132,20 +136,25 @@ def get_accounts_from_salt_edge(connection_id: str) -> list:
 
 def get_transactions(customer_id: str) -> pd.DataFrame:
     """Get transactions, combine logic for fetching connections, accounts, and transactions."""
-    connections_ids = get_connection_ids_from_salt_edge(customer_id)
-    if not connections_ids:
-        print(f"No active connections found for customer {customer_id}.")
-        return pd.DataFrame()
+    if LOCAL:
+        # If local, return transactions from the local CSV
+        transactions = pd.read_csv('./data/transactions.csv')
+        return transactions[transactions['customer_id'] == customer_id]
+    else:
+        connections_ids = get_connection_ids_from_salt_edge(customer_id)
+        if not connections_ids:
+            print(f"No active connections found for customer {customer_id}.")
+            return pd.DataFrame()
 
-    all_transactions = pd.DataFrame()
-    for connection_id in connections_ids:
-        accounts_ids = get_accounts_from_salt_edge(connection_id)
-        transactions = fetch_transactions_from_salt_edge(connection_id, accounts_ids)
-        all_transactions = pd.concat(
-            [all_transactions, transactions], ignore_index=True
-        )
+        all_transactions = pd.DataFrame()
+        for connection_id in connections_ids:
+            accounts_ids = get_accounts_from_salt_edge(connection_id)
+            transactions = fetch_transactions_from_salt_edge(connection_id, accounts_ids)
+            all_transactions = pd.concat(
+                [all_transactions, transactions], ignore_index=True
+            )
 
-    return all_transactions
+        return all_transactions
 
 
 def get_transactions_main() -> None:
