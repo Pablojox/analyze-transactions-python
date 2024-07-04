@@ -224,39 +224,51 @@ def calculate_transaction_percentages(
 
     return percentages_df
 
+# Prepare the dataframe
+melted_df = pd.melt(
+    percentages_df,
+    id_vars=["customer_id"],
+    var_name="category",
+    value_name="transaction_percentage",
+)
+
+def snake_to_human(snake_str):
+    """Transform snake case to human readable"""
+    words = snake_str.split("_")
+    human_readable = " ".join(words).capitalize()
+    return human_readable
+
+# Apply the function to the 'category' column
+melted_df["category"] = melted_df["category"].apply(snake_to_human)
+
+# Set the theme for seaborn
+sns.set_theme(font_scale=1.5, palette="colorblind")
 
 def plot_transactions(df: pd.DataFrame) -> None:
     """Plot a bar plot of transaction percentages per category"""
-    # Prepare the dataframe
-    melted_df = pd.melt(
-        percentages_df,
-        id_vars=["customer_id"],
-        var_name="category",
-        value_name="transaction_percentage",
-    )
 
-     # Creating the bar plot
-    plt.figure(figsize=(15, 20))
-    sns.catplot(
-        data=melted_df,
+    # Creating the bar plot with adjusted size and aspect ratio
+    plt.figure(figsize=(15, 20))  # Increase the figure size for better spacing
+    g = sns.catplot(
+        data=df,
         y="category",
         x="transaction_percentage",
         kind="bar",
-        height=12,
-        aspect=1.2,
+        height=10,  # Increase height for more space between categories
+        aspect=1,  # Aspect ratio for better width-to-height ratio
     )
 
     # Adding title to the plot
-    plt.title("Transaction Percentages per Category")
+    g.fig.suptitle("Transaction Percentages per Category", y=1.02)
 
-    # Adding label to the x-axis
-    plt.ylabel("Transaction Category")
+    # Adding labels to the axes
+    g.set_axis_labels("Percentage", "Transaction Category")
 
-    # Adding label to the y-axis
-    plt.xlabel("Percentage")
+    # Set x-axis limit from 0 to the max value found in the DataFrame
+    plt.xlim(0, df["transaction_percentage"].max())
 
-    # Set y-axis limit from 0 to the max value found in the DataFrame
-    plt.xlim(0, melted_df["transaction_percentage"].max())
+    # Save the plot as an SVG file
+    plt.savefig("transaction_percentages.svg", format="svg")
 
     # Displaying the plot
     plt.show()
