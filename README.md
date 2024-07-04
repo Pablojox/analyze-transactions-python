@@ -15,3 +15,12 @@ To achieve this, I implemented the following steps:
 - Use the DataFrame to create a chart with Seaborn and Matplotlib to visualize the data.
 
 The code to solve this project can be found [HERE]()
+
+## ⚙️ Setup and Usage
+First, download this repository and use the following command in your terminal to install dependencies and create the `.env` file:
+
+    make install
+
+Once the installation is complete, edit the `.env` file with the corresponding data. When you have finished editing the `.env` file, use the following command in your terminal to run the code:
+
+    make run
