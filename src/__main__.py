@@ -226,29 +226,37 @@ def calculate_transaction_percentages(
 
 
 def plot_transactions_heatmap(df: pd.DataFrame) -> None:
-    """Plot a heatmap of transaction percentages per category for each customer."""
-    # Calculate the number of customers and categories
-    num_customers, num_categories = df.shape
-
-    # Set the figure size according to the dataframe size
-    plt.figure(figsize=(num_categories * 1.5, num_customers * 0.5))
-
-    # Creating the heatmap
-    sns.heatmap(
-        df.set_index("customer_id"),
-        annot=True,
-        cmap="YlGnBu",
-        cbar_kws={"label": "Percentage"},
+    """Plot a bar plot of transaction percentages per category"""
+    # Prepare the dataframe
+    melted_df = pd.melt(
+        percentages_df,
+        id_vars=["customer_id"],
+        var_name="category",
+        value_name="transaction_percentage",
     )
 
-    # Adding title to the heatmap
-    plt.title("Percentage of Transactions per Category and Customer")
+     # Creating the bar plot
+    plt.figure(figsize=(15, 20))
+    sns.catplot(
+        data=melted_df,
+        y="category",
+        x="transaction_percentage",
+        kind="bar",
+        height=12,
+        aspect=1.2,
+    )
+
+    # Adding title to the plot
+    plt.title("Transaction Percentages per Category")
 
     # Adding label to the x-axis
-    plt.xlabel("Transaction Category")
+    plt.ylabel("Transaction Category")
 
     # Adding label to the y-axis
-    plt.ylabel("Customer ID")
+    plt.xlabel("Percentage")
+
+    # Set y-axis limit from 0 to the max value found in the DataFrame
+    plt.xlim(0, melted_df["transaction_percentage"].max())
 
     # Displaying the plot
     plt.show()
