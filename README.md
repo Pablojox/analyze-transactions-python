@@ -14,13 +14,33 @@ To achieve this, I implemented the following steps:
 - Transform these transactions into a pandas DataFrame, with categories as the series, user IDs as the index, and the proportion of each category in each element for that record.
 - Use the DataFrame to create a chart with Seaborn and Matplotlib to visualize the data.
 
-The code to solve this project can be found [HERE]()
+The code to solve this project can be found [HERE](https://github.com/Pablojox/analyze-transactions-python/blob/main/src/__main__.py)
 
 ## ⚙️ Setup and Usage
-First, download this repository and use the following command in your terminal to install dependencies and create the `.env` file:
-
+1. Download this repository and use the following command in your terminal to install dependencies and create the `.env` file:
+   
+    ```sh
     make install
+    ```
+    
+2. Once the installation is complete, you can choose to test the code with a mock CSV file locally, or to test it as it is. If you want to run it locally, skip to step 4. If not, edit the `config.py` file to set `LOCAL=False`, and continue with step 3.
 
-Once the installation is complete, edit the `.env` file with the corresponding data. When you have finished editing the `.env` file, use the following command in your terminal to run the code:
+3. Edit the `.env` file with the corresponding data.
 
+4. Use the following command in your terminal to run the code:
+
+    ```sh
     make run
+    ```
+
+
+
+2. Once the installation is complete, you can choose to test the code with a mock CSV file locally, or to test it as it is. If you want to run it locally, skip to step 4. If not, edit the `config.py` file to set `LOCAL=False`.
+
+3. Edit the `.env` file with the corresponding data.
+
+4. Use the following command in your terminal to run the code:
+
+    ```sh
+    make run
+    ```
