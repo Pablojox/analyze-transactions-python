@@ -224,13 +224,6 @@ def calculate_transaction_percentages(
 
     return percentages_df
 
-# Prepare the dataframe
-melted_df = pd.melt(
-    percentages_df,
-    id_vars=["customer_id"],
-    var_name="category",
-    value_name="transaction_percentage",
-)
 
 def snake_to_human(snake_str):
     """Transform snake case to human readable"""
@@ -238,41 +231,75 @@ def snake_to_human(snake_str):
     human_readable = " ".join(words).capitalize()
     return human_readable
 
-# Apply the function to the 'category' column
-melted_df["category"] = melted_df["category"].apply(snake_to_human)
 
-# Set the theme for seaborn
-sns.set_theme(font_scale=1.5, palette="colorblind")
+def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
+    """Prepare the DataFrame to create a chart.""" 
+    # Transpose and count the non-zero entries per category
+    counts = (percentages_df.drop(columns=["customer_id"]) > 0).sum()
+
+    # Filter the categories with at least 5 entries
+    valid_categories = counts[counts >= 5].index
+    
+    # Filter the DataFrame to keep only valid categories
+    filtered_df = percentages_df[["customer_id"] + list(valid_categories)]
+
+    # Melt the DataFrame
+    melted_df = pd.melt(
+        filtered_df,
+        id_vars=["customer_id"],
+        var_name="category",
+        value_name="transaction_percentage",
+    )
+    
+    # Apply the function to the 'category' column
+    melted_df["category"] = melted_df["category"].apply(snake_to_human)
+
+    # Compute the mean transaction percentage for each category and sort them
+    category_means = (
+        melted_df.groupby("category")["transaction_percentage"]
+        .mean()
+        .sort_values(ascending=False)
+    )
+    sorted_categories = category_means.index
+    
+    # Reorder the categories in the melted DataFrame
+    melted_df["category"] = pd.Categorical(
+        melted_df["category"], categories=sorted_categories, ordered=True
+    )
+
 
 def plot_transactions(df: pd.DataFrame) -> None:
-    """Plot a bar plot of transaction percentages per category"""
-
+    """Plot a bar plot of transaction fractions per category"""
+    # Set the theme for seaborn
+    sns.set_theme(font_scale=1.5, palette="colorblind")
+    
     # Creating the bar plot with adjusted size and aspect ratio
-    plt.figure(figsize=(15, 20))  # Increase the figure size for better spacing
+    plt.figure(figsize=(10, 15))  # Increase the figure size for better spacing
     g = sns.catplot(
         data=df,
         y="category",
         x="transaction_percentage",
+        hue="category",
         kind="bar",
         height=10,  # Increase height for more space between categories
         aspect=1,  # Aspect ratio for better width-to-height ratio
     )
 
     # Adding title to the plot
-    g.fig.suptitle("Transaction Percentages per Category", y=1.02)
+    g.fig.suptitle("Transaction Fractions per Category", y=1.02)
 
     # Adding labels to the axes
-    g.set_axis_labels("Percentage", "Transaction Category")
+    g.set_axis_labels("Fraction", "Transaction Category")
 
-    # Set x-axis limit from 0 to the max value found in the DataFrame
-    plt.xlim(0, df["transaction_percentage"].max())
-
-    # Save the plot as an SVG file
-    plt.savefig("transaction_percentages.svg", format="svg")
+    # Set x-axis to log scale to improve readability
+    g.set(xscale="log")
+    custom_labels = ["0.0015", "0.0055", "0.02", "0.08", "0.3", "0.7"]
+    custom_ticks = [0.0015, 0.0055, 0.02, 0.08, 0.3, 0.7]
+    g.ax.set_xticks(custom_ticks)
+    g.set_xticklabels(custom_labels)
 
     # Displaying the plot
     plt.show()
-
 
 if __name__ == "__main__":
     get_transactions_main()
