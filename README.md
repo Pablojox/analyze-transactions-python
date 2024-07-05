@@ -5,7 +5,9 @@ We developed an application to connect to customer bank accounts, read their tra
 All app user information is stored in AWS Cognito, and their transaction data is obtained using Salt Edge.
 
 ## 🎯 Objectives
-The primary goal of this project is to retrieve transaction data from Salt Edge for a large pool of users and analyze the distribution of transactions across each category.
+The primary goal of this project is to retrieve transaction data from Salt Edge for a large pool of users and analyze the distribution of transactions across each category. The final chart that we are looking for is displayed below:
+
+![output](https://github.com/Pablojox/analyze-transactions-python/assets/157996890/c88d57ee-dbe4-431a-bb76-cd84f66f1a5d)
 
 ## ✅ Solution steps
 To achieve this, I implemented the following steps:
