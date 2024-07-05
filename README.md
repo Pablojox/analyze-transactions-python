@@ -32,15 +32,3 @@ The code to solve this project can be found [HERE](https://github.com/Pablojox/a
     ```sh
     make run
     ```
-
-
-
-2. Once the installation is complete, you can choose to test the code with a mock CSV file locally, or to test it as it is. If you want to run it locally, skip to step 4. If not, edit the `config.py` file to set `LOCAL=False`.
-
-3. Edit the `.env` file with the corresponding data.
-
-4. Use the following command in your terminal to run the code:
-
-    ```sh
-    make run
-    ```
