@@ -1,4 +1,4 @@
-# Transaction analysis project (Python)
+# Bank Transactions Analysis Project (Python)
 ## 🗺️ Context
 We developed an application to connect to customer bank accounts, read their transactions, and categorize them into various groups (groceries, transportation, electronics, etc.). We noticed that a significant number of transactions were being categorized as "others." We needed to determine whether this was an isolated issue or if the categorization process was flawed.
 
