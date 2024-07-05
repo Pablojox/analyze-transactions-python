@@ -15,7 +15,7 @@ def get_environment_variable(name: str) -> str:
     return value
 
 
-def get_cognito_client(region: Optional[str] = None) -> boto3.client:
+def get_cognito_client(region: [str] = None) -> boto3.client:
     """Create Cognito client"""
     if region is None:
         region = get_environment_variable("REGION")
@@ -181,48 +181,48 @@ def get_transactions_main() -> None:
         all_transactions, customer_ids_df
     )
 
-    # Call the function to plot the heatmap with the calculated percentages
-    plot_transactions_heatmap(user_transactions_percentages)
-
 
 def calculate_transaction_percentages(
     transactions_df: pd.DataFrame,
     customer_ids_df: pd.DataFrame,
 ) -> pd.DataFrame:
     """Returns a DataFrame with customer ID as index and columns for each category containing the percentage of transactions in that category."""
-    # 1. Group transactions by customer ID and category, then count occurrences for each combination
-    transaction_counts = (
-        transactions_df.groupby(["customer_id", "category"])
-        .size()
-        .to_frame(name="count")
-        .reset_index()
-    )
+    if LOCAL:
+        pass
+    else:
+        # 1. Group transactions by customer ID and category, then count occurrences for each combination
+        transaction_counts = (
+            transactions_df.groupby(["customer_id", "category"])
+            .size()
+            .to_frame(name="count")
+            .reset_index()
+        )
 
-    # 2. Merge transaction counts with customer data (optional)
-    merged_df = transaction_counts.merge(customer_ids_df, how="left", on="customer_id")
+        # 2. Merge transaction counts with customer data (optional)
+        merged_df = transaction_counts.merge(customer_ids_df, how="left", on="customer_id")
 
-    # 3. Calculate total transactions per customer
-    total_transactions = (
-        transactions_df.groupby("customer_id").size().to_frame(name="total_count")
-    )
+        # 3. Calculate total transactions per customer
+        total_transactions = (
+            transactions_df.groupby("customer_id").size().to_frame(name="total_count")
+        )
 
-    # 4. Merge transaction counts with total transactions per customer
-    merged_df = merged_df.merge(total_transactions, how="left", on="customer_id")
+        # 4. Merge transaction counts with total transactions per customer
+        merged_df = merged_df.merge(total_transactions, how="left", on="customer_id")
 
-    # 5. Fill missing values with 0 to avoid division errors
-    merged_df = merged_df.fillna(0)
+        # 5. Fill missing values with 0 to avoid division errors
+        merged_df = merged_df.fillna(0)
 
-    # 6. Calculate percentage of transactions in each category for each customer
-    merged_df["percentage"] = merged_df["count"] / merged_df.groupby("customer_id")[
-        "count"
-    ].transform("sum")
+        # 6. Calculate percentage of transactions in each category for each customer
+        merged_df["percentage"] = merged_df["count"] / merged_df.groupby("customer_id")[
+            "count"
+        ].transform("sum")
 
-    # 7. Pivot table to get the desired format with customer ID as index, category as columns, and percentage as values
-    percentages_df = merged_df.pivot_table(
-        index="customer_id", columns="category", values="percentage", fill_value=0
-    ).reset_index()
+        # 7. Pivot table to get the desired format with customer ID as index, category as columns, and percentage as values
+        percentages_df = merged_df.pivot_table(
+            index="customer_id", columns="category", values="percentage", fill_value=0
+        ).reset_index()
 
-    return percentages_df
+        return percentages_df
 
 
 def snake_to_human(snake_str):
@@ -302,5 +302,5 @@ def plot_transactions(df: pd.DataFrame) -> None:
     plt.show()
 
 if __name__ == "__main__":
-    get_transactions_main()
+    plot_transactions(melted_df)
 
